@@ -6,9 +6,9 @@ from typing import Any
 
 from fastmcp import FastMCP
 
-from cloudshift.config import CloudShiftConfig, plane_base_url, plane_workspace_slug
+from cloudshift.config import CloudShiftConfig, plane_base_url
 from cloudshift.errors import CloudShiftError, ok
-from cloudshift.services.plane_fetch import PlaneCEClient
+from cloudshift.services.plane_fetch import caller_client
 
 
 def register_diagnostic_tools(mcp: FastMCP) -> None:
@@ -17,7 +17,7 @@ def register_diagnostic_tools(mcp: FastMCP) -> None:
         """READ-only CE capability snapshot for CloudShift (no mutations)."""
         cfg = CloudShiftConfig.from_env()
         try:
-            with PlaneCEClient(config=cfg) as client:
+            with caller_client(config=cfg) as client:
                 projects = client.list_projects()
                 sample = next((p for p in projects if not p.get("archived_at")), None)
                 detail: dict[str, Any] = {}
@@ -38,7 +38,7 @@ def register_diagnostic_tools(mcp: FastMCP) -> None:
                     }
                 data = {
                     "plane_base_url": plane_base_url(),
-                    "workspace_slug": plane_workspace_slug(),
+                    "workspace_slug": client.workspace_slug,
                     "timezone": cfg.timezone,
                     "project_count": len(projects),
                     "adapter": "ce-0.23.1-issues",

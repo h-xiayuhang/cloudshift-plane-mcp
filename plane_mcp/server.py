@@ -9,7 +9,7 @@ from mcp.types import Icon
 
 from plane_mcp.auth import PlaneHeaderAuthProvider, PlaneOAuthProvider
 from plane_mcp.instructions import SERVER_INSTRUCTIONS
-from plane_mcp.middleware import PlaneLoggingMiddleware
+from plane_mcp.middleware import PlaneLoggingMiddleware, WorkspaceArgMiddleware
 from plane_mcp.storage import build_token_store
 from plane_mcp.tools import register_tools
 
@@ -81,6 +81,7 @@ def get_header_mcp():
         ),
     )
     header_mcp.add_middleware(PlaneLoggingMiddleware(include_payloads=True))
+    header_mcp.add_middleware(WorkspaceArgMiddleware())
     register_tools(header_mcp)
     return header_mcp
 

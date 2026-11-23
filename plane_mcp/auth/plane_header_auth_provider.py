@@ -216,16 +216,13 @@ class PlaneHeaderAuthProvider(TokenVerifier):
             if not api_key:
                 logger.warning("API key missing (Authorization Bearer / x-api-key)")
                 return None
+            # 没有 slug 也放行：workspace 由每次工具调用的 workspace_slug 参数决定，
+            # 此时只用 users/me 校验 key（_validate_api_key 在 slug 为空时就是这样）。
             if not workspace_slug:
-                logger.warning(
-                    "Workspace slug missing — set x-workspace-slug, "
-                    "?workspace_slug=, /http/api-key/w/{slug}/mcp, "
-                    "or PLANE_WORKSPACE_SLUG"
-                )
-                return None
+                logger.info("No workspace in request; validating key via /users/me/ only")
 
             validated = await self._validate_api_key(api_key, workspace_slug=workspace_slug)
-            if not validated and self._trusted_env_key_match(api_key, workspace_slug):
+            if not validated and workspace_slug and self._trusted_env_key_match(api_key, workspace_slug):
                 logger.warning(
                     "Plane auth probe failed; accepting token that matches PLANE_API_KEY env "
                     "(CloudShift CE fallback for transient Plane 502/503)"
@@ -245,7 +242,7 @@ class PlaneHeaderAuthProvider(TokenVerifier):
                 expires_at=expires_at,
                 claims={
                     "auth_method": "api_key_header",
-                    "workspace_slug": workspace_slug,
+                    "workspace_slug": workspace_slug or "",
                 },
             )
         except RuntimeError:

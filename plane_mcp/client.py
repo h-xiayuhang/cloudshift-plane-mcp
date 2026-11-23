@@ -8,6 +8,8 @@ from fastmcp.server.dependencies import get_access_token
 from fastmcp.utilities.logging import get_logger
 from plane import PlaneClient
 
+from plane_mcp.middleware import call_workspace_slug
+
 logger = get_logger(__name__)
 
 
@@ -70,5 +72,6 @@ def get_plane_client_context() -> PlaneClientContext:
 
     return PlaneClientContext(
         client=client,
-        workspace_slug=workspace_slug,
+        # 调用方在本次工具调用里指定的 workspace 优先（见 WorkspaceArgMiddleware）
+        workspace_slug=call_workspace_slug.get() or workspace_slug,
     )

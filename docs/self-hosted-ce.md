@@ -31,7 +31,6 @@ Observed on CE 0.23.1 and 1.3.1. Your build may differ; when in doubt, trust the
 | Symptom | Cause | Fix |
 |---|---|---|
 | Server exits: `PLANE_OAUTH_PROVIDER_BASE_URL is not set` | HTTP mode with OAuth enabled, but no OAuth app configured | Set `PLANE_MCP_DISABLE_OAUTH=true` for API-key-only mode, or configure the `PLANE_OAUTH_PROVIDER_*` variables |
-| Server exits: `PLANE_API_KEY is required when PLANE_MCP_DISABLE_OAUTH=true` | API-key-only mode needs a server key | Set `PLANE_API_KEY` |
 | `--host` / `--port` have no effect | The CLI takes only a mode (`stdio`, `http`, `sse`) and ignores extra flags | Use the `MCP_HOST` / `MCP_PORT` environment variables |
 | `invalid_token` / 401 on `/http/api-key/mcp` | Key rejected by Plane, wrong workspace slug, or no workspace given | Check the key in Plane; send `x-workspace-slug` or use `/http/api-key/w/<slug>/mcp`; check server logs for `API key validation failed` |
 | `GET /http/api-key/mcp` returns 405 | Expected: MCP requests are `POST` | Use the `curl` initialize check in the [README](../README.md#quick-start) |

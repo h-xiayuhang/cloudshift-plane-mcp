@@ -4,7 +4,7 @@ The seven `cloudshift_plane_*` tools build status reports by reading Plane and c
 
 All report tools are **read-only**. They read Plane through their own client in `cloudshift/services/plane_fetch.py`, which uses the `/issues/` API paths that self-hosted Community Edition supports. They work even where some upstream work-item tools return 404.
 
-> **Credentials:** report tools always use the server's `PLANE_API_KEY` and `PLANE_WORKSPACE_SLUG`, not the key of the client that called them. Anyone who can call the server can therefore read reports for that workspace. Run one server per team or workspace; don't share an HTTP server across tenants.
+> **Credentials:** over HTTP (API-key mode), report tools use the **caller's own** Plane API key and the `workspace_slug` argument of each call, the same as every other tool, so a caller only sees what their key can see. Over stdio there is no per-request key, so they fall back to `PLANE_API_KEY` and `PLANE_WORKSPACE_SLUG` from the environment.
 
 ## Tools
 

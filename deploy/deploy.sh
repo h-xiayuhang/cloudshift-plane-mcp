@@ -54,8 +54,6 @@ load_env() {
     . "${APP_DIR}/.env"
     set +a
     PORT="${MCP_PORT:-8211}"
-    : "${PLANE_API_KEY:?PLANE_API_KEY must be set in .env}"
-    : "${PLANE_WORKSPACE_SLUG:?PLANE_WORKSPACE_SLUG must be set in .env}"
 }
 
 has_systemd_unit() {
@@ -117,18 +115,18 @@ start_server() {
 }
 
 health_check() {
+    # 服务端不持有任何 Plane Key：不带凭据的请求应得到 401，说明服务已启动且认证生效。
+    # 要验证真实 Key，请自行用带 Authorization 的请求测试（见 README）。
     local url="http://127.0.0.1:${PORT}${MCP_PATH_PREFIX:-}/http/api-key/mcp"
-    local body='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"deploy-check","version":"0"}}}'
+    local body='{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
     local code attempt
     for attempt in $(seq 1 "${HEALTH_RETRIES}"); do
         code="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${url}" \
-            -H "Authorization: Bearer ${PLANE_API_KEY}" \
-            -H "x-workspace-slug: ${PLANE_WORKSPACE_SLUG}" \
             -H 'Content-Type: application/json' \
             -H 'Accept: application/json, text/event-stream' \
             -d "${body}" || true)"
-        if [ "${code}" = "200" ]; then
-            log OK "Healthy: MCP initialize on ${url} returned 200"
+        if [ "${code}" = "401" ]; then
+            log OK "Healthy: ${url} is up (401 without credentials, as expected)"
             return
         fi
         log WARN "Not ready (attempt ${attempt}/${HEALTH_RETRIES}, HTTP ${code})"
@@ -137,7 +135,7 @@ health_check() {
     if [ -f "${LOG_DIR}/plane-mcp-server.log" ]; then
         tail -n 20 "${LOG_DIR}/plane-mcp-server.log" >&2
     fi
-    die "Server did not become healthy. HTTP 401 means Plane rejected PLANE_API_KEY or the workspace slug."
+    die "Server did not become healthy: expected HTTP 401 without credentials on ${url}."
 }
 
 main() {

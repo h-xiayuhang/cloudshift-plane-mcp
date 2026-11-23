@@ -248,3 +248,24 @@ class PlaneCEClient:
                         by_id[mid] = member
             self._cache[cache_key] = list(by_id.values())
         return self._cache[cache_key]
+
+
+def caller_client(config: CloudShiftConfig | None = None) -> PlaneCEClient:
+    """用当前调用者的 key 和本次调用的 workspace 建客户端。
+
+    HTTP key 模式：key 来自请求头（认证后的 access token），slug 来自工具参数 workspace_slug。
+    没有认证上下文（stdio）时退回环境变量 PLANE_API_KEY / PLANE_WORKSPACE_SLUG。
+    shortcut: OAuth 模式的 access token 不是 API key，此时仍退回环境变量；需要时再按 token 类型分支。
+    """
+    # 延迟 import：cloudshift 是独立扩展包，只在运行时依赖 plane_mcp 的调用上下文
+    from fastmcp.server.dependencies import get_access_token
+
+    from plane_mcp.middleware import call_workspace_slug
+
+    api_key: str | None = None
+    slug: str | None = call_workspace_slug.get()
+    token = get_access_token()
+    if token and token.claims.get("auth_method") == "api_key_header":
+        api_key = token.token
+        slug = slug or token.claims.get("workspace_slug") or None
+    return PlaneCEClient(api_key=api_key, workspace_slug=slug, config=config)

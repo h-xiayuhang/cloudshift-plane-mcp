@@ -195,11 +195,6 @@ def main() -> None:
         if disable_oauth:
             # Claude.ai discovers OAuth via /.well-known on the same host and forces
             # the consent screen even for /http/api-key/... URLs. Mount API-key only.
-            if not os.getenv("PLANE_API_KEY"):
-                raise ValueError(
-                    "PLANE_API_KEY is required when PLANE_MCP_DISABLE_OAUTH=true "
-                    "(Claude URL-only auth injects this server key)."
-                )
             app = Starlette(
                 routes=[Mount(prefix + "/http/api-key", app=header_app)],
                 lifespan=lambda app: header_only_lifespan(header_app),

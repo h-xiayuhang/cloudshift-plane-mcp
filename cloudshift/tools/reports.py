@@ -7,12 +7,14 @@ from typing import Any
 from fastmcp import FastMCP
 
 from cloudshift.errors import CloudShiftError, ok
+from cloudshift.services.plane_fetch import caller_client
 from cloudshift.services.reporting_service import ReportingService
 
 
 def _run(fn) -> dict[str, Any]:
     try:
-        with ReportingService() as svc:
+        # 用调用者自己的 key 和本次调用的 workspace，不读服务端环境变量里的 key/slug
+        with ReportingService(client=caller_client()) as svc:
             data = fn(svc)
         return ok(data, metadata={"wave": 2, "plane_edition": "ce-0.23.1-adapter"})
     except CloudShiftError as exc:

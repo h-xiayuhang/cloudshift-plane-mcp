@@ -1,6 +1,6 @@
 # Configuration
 
-Everything is configured through environment variables. The server does **not** read `.env` itself. Export the variables in your shell (`set -a; . ./.env; set +a`), or pass them through Docker `env_file`, systemd `EnvironmentFile`, or your MCP client's `env` block.
+Everything is configured through environment variables. The server also reads a `.env` file from the current working directory (or a parent directory) at startup; variables already set in the real environment take precedence over the file. You can also pass them through Docker `env_file`, systemd `EnvironmentFile`, or your MCP client's `env` block.
 
 ## Plane connection
 
@@ -20,7 +20,7 @@ These only apply to `plane-mcp-server http`.
 | `MCP_HOST` | `0.0.0.0` | Bind address. Use `127.0.0.1` behind a reverse proxy on the same host |
 | `MCP_PORT` | `8211` | Bind port |
 | `MCP_PATH_PREFIX` | empty | Prefix for all routes, e.g. `/plane` when proxying under a sub-path |
-| `PLANE_MCP_DISABLE_OAUTH` | `false` | `true` mounts only `/http/api-key/...` and drops the OAuth and `/.well-known` routes. Recommended unless you have configured a Plane OAuth app. Requires `PLANE_API_KEY` |
+| `PLANE_MCP_DISABLE_OAUTH` | `false` | `true` mounts only `/http/api-key/...` and drops the OAuth and `/.well-known` routes. Recommended unless you have configured a Plane OAuth app. `PLANE_API_KEY` is not required for plain per-request key auth; it is only used by the `cloudshift_plane_*` report tools and by URL-only auth |
 | `PLANE_MCP_ALLOW_URL_ONLY_AUTH` | `false` | See [URL-only auth](#url-only-auth) |
 | `LOG_USER_INFO` | `false` | `true` adds display names (PII) to logs. User IDs and workspace slugs are always logged |
 

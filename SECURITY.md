@@ -31,6 +31,6 @@ Out of scope:
 
 - **API keys are bearer credentials.** Each HTTP request carries a Plane API key, and the server acts with exactly that key's permissions. Always serve HTTP over TLS.
 - **URL-only auth is off by default.** With `PLANE_MCP_ALLOW_URL_ONLY_AUTH=true`, requests without credentials to `/http/api-key/w/<slug>/mcp` run with the **server's** `PLANE_API_KEY`. Enable it only behind a network boundary or an authenticating proxy.
-- **Report tools use the server's key.** `cloudshift_plane_*` tools read Plane with `PLANE_API_KEY` / `PLANE_WORKSPACE_SLUG` from the server environment, regardless of who calls them. Run one server per team or workspace.
+- **Report tools use the caller's key.** Over HTTP, `cloudshift_plane_*` tools read Plane with the key from the request and the call's `workspace_slug`. Over stdio they use `PLANE_API_KEY` / `PLANE_WORKSPACE_SLUG` from the environment.
 - **Fallback acceptance.** If Plane is temporarily unreachable (502/503), a request whose key exactly matches the server's `PLANE_API_KEY` is still accepted. Other keys are rejected.
 - **Logs** never contain API keys. Display names are logged only with `LOG_USER_INFO=true`.
