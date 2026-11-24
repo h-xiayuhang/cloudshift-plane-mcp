@@ -1,0 +1,18 @@
+ARG PYTHON_BASE=registry.voyah.cn/docker.io/python:3.11.13-slim
+FROM ${PYTHON_BASE}
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PATH="/app/.venv/bin:$PATH" \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_CONCURRENT_DOWNLOADS=8
+
+WORKDIR /app
+
+# 由 build-base.sh 从构建机注入 uv，避免构建阶段访问 ghcr.io。
+COPY --chmod=755 uv /usr/local/bin/uv
+COPY pyproject.toml uv.lock ./
+
+RUN --mount=type=cache,id=plane-mcp-uv,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project

@@ -1,0 +1,45 @@
+replicaCount: 1
+image:
+  repository: registry.voyah.cn/docker.io/bot-lite/plane-mcp
+  tag: ""            # 默认使用 appVersion
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+# 非敏感环境变量 -> ConfigMap
+env:
+  PLANE_BASE_URL: https://plane.voyah.cn
+  MCP_HOST: 0.0.0.0
+  MCP_PORT: "8211"
+  PLANE_MCP_DISABLE_OAUTH: "true"
+  PLANE_MCP_ALLOW_URL_ONLY_AUTH: "false"
+  # MCP_PATH_PREFIX: ""
+
+# 敏感变量（如 PLANE_API_KEY，仅 URL-only 认证需要）。
+# 优先使用已有 Secret：existingSecret 名称，其所有键会注入为环境变量。
+existingSecret: ""
+secretEnv: {}
+
+# Pod 内静态域名解析（集群 DNS 解析不了 Plane 域名时使用，IP 变化需手动更新）
+hostAliases:
+  - ip: 10.82.67.142
+    hostnames: [plane.voyah.cn]
+
+service:
+  type: NodePort
+  port: 8211
+  nodePort: null   # type=NodePort 时可指定 30000-32767，留空则随机
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: plane-mcp.example.com
+  tls: []   # - secretName: x\n    hosts: [plane-mcp.example.com]
+
+resources:
+  requests: {cpu: 100m, memory: 128Mi}
+  limits: {memory: 512Mi}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
