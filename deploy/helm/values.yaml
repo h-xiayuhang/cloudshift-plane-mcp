@@ -1,7 +1,7 @@
 replicaCount: 1
 image:
   repository: registry.voyah.cn/docker.io/bot-lite/plane-mcp
-  tag: ""            # 默认使用 appVersion
+  tag: "9c9a9a-202611241047"            # 默认使用 appVersion
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 
@@ -18,11 +18,6 @@ env:
 # 优先使用已有 Secret：existingSecret 名称，其所有键会注入为环境变量。
 existingSecret: ""
 secretEnv: {}
-
-# Pod 内静态域名解析（集群 DNS 解析不了 Plane 域名时使用，IP 变化需手动更新）
-hostAliases:
-  - ip: 10.82.67.142
-    hostnames: [plane.voyah.cn]
 
 service:
   type: NodePort
